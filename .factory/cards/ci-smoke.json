@@ -1,0 +1,52 @@
+{
+  "id": "ci-smoke",
+  "repo": "tekscape-inc/sample-cli-py",
+  "kind": "fix",
+  "lane": "coder-pro",
+  "risk_class": "low",
+  "title": "CI smoke: generated workflow posts the three contexts",
+  "spec": "Throwaway P1-T13 smoke card. Add a docstring to greet() in src/samplecli/greet.py. Do not change behaviour.",
+  "acceptance": {
+    "criteria": [
+      {
+        "id": "AC1",
+        "text": "greet('CI') == 'Hello, CI!'",
+        "verified_by": "tests/test_ci_smoke.py::test_ci_smoke_greets"
+      }
+    ],
+    "tests": [
+      {
+        "path": "tests/test_ci_smoke.py",
+        "sha256": "57fda4ffc56b29a6ce573d051cc0d60ca9c7bd7236edd42b94a77b1c6069df11"
+      }
+    ]
+  },
+  "success": {
+    "run": "pytest -q tests/test_ci_smoke.py",
+    "timeout_s": 120
+  },
+  "scope": {
+    "writable": [
+      "src/samplecli/greet.py"
+    ],
+    "out_of_scope": [
+      "CLI argument parsing",
+      "packaging"
+    ]
+  },
+  "diff_budget": {
+    "files": 1,
+    "lines": 10
+  },
+  "deps": {
+    "allowed_new": []
+  },
+  "depends_on": [],
+  "author": {
+    "architect": {
+      "vendor": "anthropic",
+      "model": "claude-opus"
+    },
+    "implementer_vendor_excluded_from_judge": true
+  }
+}
