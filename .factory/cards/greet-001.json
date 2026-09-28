@@ -1,0 +1,57 @@
+{
+  "id": "greet-001",
+  "repo": "tekscape-inc/sample-cli-py",
+  "kind": "fix",
+  "lane": "coder-pro",
+  "risk_class": "low",
+  "title": "greet() returns a formatted greeting",
+  "spec": "greet(name) currently returns the bare name. It must return the string 'Hello, <name>!' so the CLI prints a proper greeting. Change only src/samplecli/greet.py. Do not change the function signature, add dependencies, or edit tests.",
+  "acceptance": {
+    "criteria": [
+      {
+        "id": "AC1",
+        "text": "greet('Ada') == 'Hello, Ada!'",
+        "verified_by": "tests/test_greet.py::test_greet_formats_name"
+      },
+      {
+        "id": "AC2",
+        "text": "greet('world') == 'Hello, world!'",
+        "verified_by": "tests/test_greet.py::test_greet_default_world"
+      }
+    ],
+    "tests": [
+      {
+        "path": "tests/test_greet.py",
+        "sha256": "772d0f68b67bef57242a5075482077bff0e4f87173871e3e985939982a4a19b3"
+      }
+    ]
+  },
+  "success": {
+    "run": "pytest -q tests/test_greet.py",
+    "timeout_s": 120
+  },
+  "scope": {
+    "writable": [
+      "src/samplecli/greet.py"
+    ],
+    "out_of_scope": [
+      "CLI argument parsing",
+      "packaging"
+    ]
+  },
+  "diff_budget": {
+    "files": 1,
+    "lines": 10
+  },
+  "deps": {
+    "allowed_new": []
+  },
+  "depends_on": [],
+  "author": {
+    "architect": {
+      "vendor": "anthropic",
+      "model": "claude-opus"
+    },
+    "implementer_vendor_excluded_from_judge": true
+  }
+}
