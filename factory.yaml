@@ -1,0 +1,14 @@
+version: 1
+repo: {github: tekscape-inc/sample-cli-py, base_branch: main, business: tekscape, customer: null}
+stack: {languages: [python], toolchain: {python: "3.12"}}
+commands:
+  setup: null                       # no third-party deps
+  build: {run: "python -m compileall -q src"}
+  lint: {run: "ruff check ."}
+  typecheck: null
+  test: {run: "pytest -q --junitxml=.factory/junit.xml", report: .factory/junit.xml, min_tests: 3}
+  e2e: null
+  boot: {run: "PYTHONPATH=src python -c 'import sys; from samplecli.cli import main; sys.exit(main([\"factory\"]))'"}
+paths: {src: ["src/**"], tests: ["tests/**", "conftest.py"]}
+risk_class: low
+owner_approval: {approvers: [jclendennen], required_for: [new_dependency, public_api]}
