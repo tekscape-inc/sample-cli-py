@@ -1,0 +1,75 @@
+{
+  "id": "greet-002",
+  "repo": "tekscape-inc/sample-cli-py",
+  "kind": "feature",
+  "lane": "qwen",
+  "risk_class": "low",
+  "title": "Add --shout to greet() and the CLI to upper-case the greeting",
+  "spec": "Add a shout mode that prints the greeting upper-cased. (1) src/samplecli/greet.py: greet gains a keyword parameter `shout: bool = False`; when true it returns the normal greeting upper-cased (greet('Ada', shout=True) == 'HELLO, ADA!'); when false or omitted, output is unchanged ('Hello, Ada!'). Callers pass it by keyword. (2) src/samplecli/cli.py: main(argv) recognises the literal flag `--shout` in any position; it is removed from the arguments before choosing the name, so the name is the first remaining argument or 'world' if none remain. main passes shout=True to greet when the flag is present, prints the result, and returns 0. No argparse rewrite is required; stdlib only. Do not change behaviour when --shout is absent, add dependencies, or edit tests. Note: adding a parameter to greet() touches the public API listed in factory.yaml owner_approval.required_for.",
+  "acceptance": {
+    "criteria": [
+      {
+        "id": "AC1",
+        "text": "greet('Ada', shout=True) returns 'HELLO, ADA!'",
+        "verified_by": "tests/test_shout.py::test_greet_shout_uppercases"
+      },
+      {
+        "id": "AC2",
+        "text": "greet('Ada') without shout still returns 'Hello, Ada!'",
+        "verified_by": "tests/test_shout.py::test_greet_shout_default_off"
+      },
+      {
+        "id": "AC3",
+        "text": "main(['--shout', 'Ada']) prints 'HELLO, ADA!' and returns 0",
+        "verified_by": "tests/test_shout.py::test_cli_shout_before_name"
+      },
+      {
+        "id": "AC4",
+        "text": "main(['Ada', '--shout']) prints 'HELLO, ADA!' and returns 0",
+        "verified_by": "tests/test_shout.py::test_cli_shout_after_name"
+      },
+      {
+        "id": "AC5",
+        "text": "main(['--shout']) prints 'HELLO, WORLD!' and returns 0",
+        "verified_by": "tests/test_shout.py::test_cli_shout_default_name"
+      }
+    ],
+    "tests": [
+      {
+        "path": "tests/test_shout.py",
+        "sha256": "0e4ad5aebbe672c6562c7464af7d337bd18d6d0c4209e514d6f745c03128e674"
+      }
+    ]
+  },
+  "success": {
+    "run": "pytest -q tests/test_shout.py",
+    "timeout_s": 180
+  },
+  "scope": {
+    "writable": [
+      "src/samplecli/greet.py",
+      "src/samplecli/cli.py"
+    ],
+    "out_of_scope": [
+      "Other CLI flags or a general argparse rewrite",
+      "Changing the default greeting format",
+      "Packaging, pyproject.toml, dependencies",
+      "Editing existing or acceptance tests"
+    ]
+  },
+  "diff_budget": {
+    "files": 2,
+    "lines": 40
+  },
+  "deps": {
+    "allowed_new": []
+  },
+  "depends_on": [],
+  "author": {
+    "architect": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5"
+    },
+    "implementer_vendor_excluded_from_judge": true
+  }
+}
