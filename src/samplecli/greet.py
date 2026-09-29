@@ -1,2 +1,3 @@
-def greet(name: str) -> str:
-    return f"Hello, {name}!"
+def greet(name: str, *, shout: bool = False) -> str:
+    greeting = f"Hello, {name}!"
+    return greeting.upper() if shout else greeting
