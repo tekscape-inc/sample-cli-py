@@ -1,0 +1,85 @@
+{
+  "id": "q-001",
+  "repo": "tekscape-inc/sample-cli-py",
+  "kind": "feature",
+  "lane": "qwen",
+  "risk_class": "medium",
+  "title": "CLI --repeat N prints the greeting N times; N < 1 is a usage error",
+  "spec": "main(argv) in src/samplecli/cli.py treats argv[0] as the name, so main(['--repeat', '3', 'Ada']) prints 'Hello, --repeat!'. Add a --repeat N option (N an integer, default 1) that prints the greeting line N times, one per line. The option may appear before or after the optional positional name: main(['--repeat', '3', 'Ada']) and main(['Ada', '--repeat', '3']) both print 'Hello, Ada!\\n' three times and return 0. The existing name handling (greet-003, greet-005) is unchanged and applies to every repetition: ends stripped, internal whitespace runs collapsed to one space, blank or missing name becomes 'world'. Without --repeat the output is exactly one line, as today. N of 0 or any negative number is a usage error: nothing is written to stdout, a non-empty usage/error message is written to stderr, and the exit status is 2. Either main() returning 2 or raising SystemExit(2) (as argparse does via parser.error) is acceptable; the tests accept both. The standard-library argparse module is the expected approach; no new dependency. Change only src/samplecli/cli.py. greet() in src/samplecli/greet.py stays byte-for-byte unchanged. Do not change main()'s signature or edit tests; tests/test_cli.py, tests/test_cli_blank_name.py and tests/test_cli_collapse_whitespace.py must still pass. Risk: medium, not high. The change adds a public CLI flag (a public_api-style change), but this manifest's owner_approval.required_for lists only new_dependency, and no dependency is added. It is rounded up from the manifest's low because it changes the CLI's public argument surface.",
+  "acceptance": {
+    "criteria": [
+      {
+        "id": "AC1",
+        "text": "main(['--repeat', '3', 'Ada']) exits 0 and prints exactly 'Hello, Ada!\\n' three times",
+        "verified_by": "tests/test_repeat.py::test_repeat_prints_greeting_n_times"
+      },
+      {
+        "id": "AC2",
+        "text": "the option may follow the name: main(['Ada', '--repeat', '2']) exits 0 and prints exactly 'Hello, Ada!\\n' twice",
+        "verified_by": "tests/test_repeat.py::test_repeat_after_name"
+      },
+      {
+        "id": "AC3",
+        "text": "--repeat 1 prints exactly one line: main(['--repeat', '1', 'Ada']) prints 'Hello, Ada!\\n'",
+        "verified_by": "tests/test_repeat.py::test_repeat_one_prints_once"
+      },
+      {
+        "id": "AC4",
+        "text": "name normalisation still applies with --repeat: main(['--repeat', '2', '  Ada   Lovelace\\t']) prints exactly 'Hello, Ada Lovelace!\\n' twice",
+        "verified_by": "tests/test_repeat.py::test_repeat_keeps_name_normalisation"
+      },
+      {
+        "id": "AC5",
+        "text": "with --repeat and no name the greeting uses 'world': main(['--repeat', '2']) prints exactly 'Hello, world!\\n' twice",
+        "verified_by": "tests/test_repeat.py::test_repeat_without_name_greets_world"
+      },
+      {
+        "id": "AC6",
+        "text": "without --repeat the greeting prints once: main(['Ada']) exits 0 and prints exactly 'Hello, Ada!\\n'",
+        "verified_by": "tests/test_repeat.py::test_no_repeat_prints_once"
+      },
+      {
+        "id": "AC7",
+        "text": "--repeat 0, -1 or -5 is a usage error: exit status 2 (returned or raised as SystemExit), empty stdout, non-empty stderr",
+        "verified_by": "tests/test_repeat.py::test_repeat_below_one_is_usage_error"
+      }
+    ],
+    "tests": [
+      {
+        "path": "tests/test_repeat.py",
+        "sha256": "e3e11244271f6e489e71bc91468b08f1fa96150ca8e45186c6dd56e942346948"
+      }
+    ]
+  },
+  "success": {
+    "run": "pytest -q tests/test_repeat.py",
+    "timeout_s": 180
+  },
+  "scope": {
+    "writable": [
+      "src/samplecli/cli.py"
+    ],
+    "out_of_scope": [
+      "src/samplecli/greet.py and greet() behaviour",
+      "changing the greet-003 strip/'world' fallback or greet-005 whitespace-collapse behaviour",
+      "other CLI flags, short aliases (-r, -n) or help-text wording",
+      "behaviour for non-integer N beyond whatever argparse type=int does",
+      "third-party argument parsing libraries, packaging and pyproject.toml"
+    ]
+  },
+  "diff_budget": {
+    "files": 1,
+    "lines": 40
+  },
+  "deps": {
+    "allowed_new": []
+  },
+  "depends_on": [],
+  "author": {
+    "architect": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5"
+    },
+    "implementer_vendor_excluded_from_judge": true
+  }
+}
