@@ -1,0 +1,84 @@
+{
+  "id": "q-002",
+  "repo": "tekscape-inc/sample-cli-py",
+  "kind": "feature",
+  "lane": "qwen",
+  "risk_class": "low",
+  "title": "CLI joins a name given as several arguments with single spaces",
+  "spec": "main(argv) in src/samplecli/cli.py uses only the first argument, so `greet Ada Lovelace` (main(['Ada', 'Lovelace'])) prints 'Hello, Ada!' and silently drops the rest. Change main() so the name is built from ALL arguments: join them with spaces, then apply the existing normalisation (greet-003 strip + 'world' fallback, greet-005 collapse of every whitespace run to one ASCII space). ' '.join(' '.join(args).split()) or 'world' is sufficient. Consequences: main(['Ada', 'Lovelace']) prints 'Hello, Ada Lovelace!'; arguments keep their order; whitespace inside or around each argument is collapsed/stripped the same way as for a single argument; blank arguments contribute nothing (main(['Ada', '', '   ', 'Lovelace']) prints 'Hello, Ada Lovelace!'); if every argument is blank, or there are none, the name is 'world'. Single-argument behaviour is unchanged, so tests/test_cli.py, tests/test_cli_blank_name.py and tests/test_cli_collapse_whitespace.py must still pass. main() prints greet(name) and returns 0. Change only src/samplecli/cli.py. greet() in src/samplecli/greet.py must stay byte-for-byte unchanged and must not normalise whitespace. Do not change main()'s signature, add CLI flags or argument-parsing libraries, add public symbols, add dependencies, or edit tests. Risk: no owner_approval category applies — the manifest only lists new_dependency and none is added; main()'s signature, flags and public symbols are unchanged; the change only affects output when more than one argument is given.",
+  "acceptance": {
+    "criteria": [
+      {
+        "id": "AC1",
+        "text": "main(['Ada', 'Lovelace']) returns 0 and prints exactly 'Hello, Ada Lovelace!\\n'",
+        "verified_by": "tests/test_cli_multi_arg_name.py::test_two_args_joined_with_one_space"
+      },
+      {
+        "id": "AC2",
+        "text": "arguments are joined in order: main(['Ada', 'King', 'Lovelace']) prints exactly 'Hello, Ada King Lovelace!\\n'",
+        "verified_by": "tests/test_cli_multi_arg_name.py::test_three_args_joined_in_order"
+      },
+      {
+        "id": "AC3",
+        "text": "whitespace around and inside joined arguments is stripped and collapsed: main(['  Ada ', '\\tKing  ', ' Lovelace\\n']) prints exactly 'Hello, Ada King Lovelace!\\n'",
+        "verified_by": "tests/test_cli_multi_arg_name.py::test_joined_args_are_stripped_and_collapsed"
+      },
+      {
+        "id": "AC4",
+        "text": "blank arguments add no extra spaces: main(['Ada', '', '   ', 'Lovelace']) prints exactly 'Hello, Ada Lovelace!\\n'",
+        "verified_by": "tests/test_cli_multi_arg_name.py::test_blank_args_are_skipped_between_words"
+      },
+      {
+        "id": "AC5",
+        "text": "when every argument is blank the name falls back to 'world': main(['', '  ', '\\t']) prints exactly 'Hello, world!\\n'",
+        "verified_by": "tests/test_cli_multi_arg_name.py::test_all_blank_args_fall_back_to_world"
+      },
+      {
+        "id": "AC6",
+        "text": "a single argument is unchanged: main(['Ada']) prints exactly 'Hello, Ada!\\n'",
+        "verified_by": "tests/test_cli_multi_arg_name.py::test_single_arg_unchanged"
+      },
+      {
+        "id": "AC7",
+        "text": "greet() is unchanged and does not normalise whitespace: greet('Ada  Lovelace') == 'Hello, Ada  Lovelace!'",
+        "verified_by": "tests/test_cli_multi_arg_name.py::test_greet_is_unchanged"
+      }
+    ],
+    "tests": [
+      {
+        "path": "tests/test_cli_multi_arg_name.py",
+        "sha256": "9ee0a2ae0cb650a6d1dd40afad0315fb5775dbd260b27fa56c29154eabe11fb1"
+      }
+    ]
+  },
+  "success": {
+    "run": "pytest -q tests/test_cli_multi_arg_name.py",
+    "timeout_s": 180
+  },
+  "scope": {
+    "writable": [
+      "src/samplecli/cli.py"
+    ],
+    "out_of_scope": [
+      "src/samplecli/greet.py and greet() behaviour",
+      "new CLI flags, public symbols, or argument parsing libraries",
+      "changing the greet-003 strip/'world' fallback or greet-005 whitespace-collapse behaviour for a single argument",
+      "packaging and pyproject.toml"
+    ]
+  },
+  "diff_budget": {
+    "files": 1,
+    "lines": 20
+  },
+  "deps": {
+    "allowed_new": []
+  },
+  "depends_on": [],
+  "author": {
+    "architect": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5"
+    },
+    "implementer_vendor_excluded_from_judge": true
+  }
+}
