@@ -1,0 +1,74 @@
+{
+  "id": "greet-005",
+  "repo": "tekscape-inc/sample-cli-py",
+  "kind": "feature",
+  "lane": "qwen",
+  "risk_class": "low",
+  "title": "CLI collapses runs of internal whitespace in the name to one space",
+  "spec": "main(argv) in src/samplecli/cli.py strips the first argument and falls back to 'world' when it is blank (greet-003), but internal whitespace passes through verbatim, so main(['Ada   Lovelace']) prints 'Hello, Ada   Lovelace!'. Change main() so that, after the existing strip, every run of one or more whitespace characters inside the name (spaces, tabs, newlines, per str.split() with no argument) is replaced by a single ASCII space; ' '.join(name.split()) is sufficient. main(['Ada   Lovelace']) prints 'Hello, Ada Lovelace!'; main(['Ada \\t\\n Lovelace']) prints 'Hello, Ada Lovelace!'; names with single spaces are unchanged. The greet-003 behaviour must be preserved: leading/trailing whitespace is removed, a blank or missing name becomes 'world', main() prints greet(name) and returns 0 (tests/test_cli_blank_name.py must still pass). Change only src/samplecli/cli.py. greet() in src/samplecli/greet.py must stay byte-for-byte unchanged and must NOT collapse whitespace (greet('Ada   Lovelace') == 'Hello, Ada   Lovelace!'). Do not change main()'s signature, add CLI flags, add public symbols (a private helper is allowed but not needed), add dependencies, or edit tests. Risk: no owner_approval category applies — no signature, parameter, flag or public symbol change (not public_api) and no new dependency (not new_dependency); this only changes CLI output for names containing repeated whitespace.",
+  "acceptance": {
+    "criteria": [
+      {
+        "id": "AC1",
+        "text": "main(['Ada   Lovelace']) returns 0 and prints exactly 'Hello, Ada Lovelace!\\n'",
+        "verified_by": "tests/test_cli_collapse_whitespace.py::test_internal_spaces_collapsed_in_cli"
+      },
+      {
+        "id": "AC2",
+        "text": "a mixed run of spaces, tabs and newlines collapses to one space: main(['Ada \\t\\n Lovelace']) prints exactly 'Hello, Ada Lovelace!\\n'",
+        "verified_by": "tests/test_cli_collapse_whitespace.py::test_mixed_whitespace_run_collapsed_in_cli"
+      },
+      {
+        "id": "AC3",
+        "text": "every internal run is collapsed and the ends are still stripped: main(['  Ada  King   Lovelace\\t']) prints exactly 'Hello, Ada King Lovelace!\\n'",
+        "verified_by": "tests/test_cli_collapse_whitespace.py::test_every_internal_run_collapsed_and_ends_stripped"
+      },
+      {
+        "id": "AC4",
+        "text": "a name with single internal spaces is unchanged: main(['Ada Lovelace']) prints exactly 'Hello, Ada Lovelace!\\n'",
+        "verified_by": "tests/test_cli_collapse_whitespace.py::test_single_spaces_preserved_in_cli"
+      },
+      {
+        "id": "AC5",
+        "text": "greet() is unchanged and does not collapse whitespace: greet('Ada   Lovelace') == 'Hello, Ada   Lovelace!'",
+        "verified_by": "tests/test_cli_collapse_whitespace.py::test_greet_does_not_collapse_whitespace"
+      }
+    ],
+    "tests": [
+      {
+        "path": "tests/test_cli_collapse_whitespace.py",
+        "sha256": "0f16cc5781d16c14095a33193088b65f07289ce0ba32516ca0b8a8042d6fe9b6"
+      }
+    ]
+  },
+  "success": {
+    "run": "pytest -q tests/test_cli_collapse_whitespace.py",
+    "timeout_s": 180
+  },
+  "scope": {
+    "writable": [
+      "src/samplecli/cli.py"
+    ],
+    "out_of_scope": [
+      "src/samplecli/greet.py and greet() behaviour",
+      "new CLI flags, public symbols, or argument parsing libraries",
+      "changing the greet-003 strip/'world' fallback behaviour",
+      "packaging and pyproject.toml"
+    ]
+  },
+  "diff_budget": {
+    "files": 1,
+    "lines": 20
+  },
+  "deps": {
+    "allowed_new": []
+  },
+  "depends_on": [],
+  "author": {
+    "architect": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5"
+    },
+    "implementer_vendor_excluded_from_judge": true
+  }
+}
