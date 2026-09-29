@@ -1,0 +1,73 @@
+{
+  "id": "greet-003",
+  "repo": "tekscape-inc/sample-cli-py",
+  "kind": "fix",
+  "lane": "qwen",
+  "risk_class": "low",
+  "title": "CLI strips the name and falls back to 'world' when it is blank",
+  "spec": "main(argv) in src/samplecli/cli.py passes the first argument to greet() verbatim, so main(['   ']) prints 'Hello,    !' and main(['  Ada\\t']) prints 'Hello,   Ada\\t!'. Change main() so that the first argument, when present, is stripped of surrounding whitespace (str.strip()); if the stripped result is empty (empty string or whitespace only, including tabs/newlines), use 'world' instead. With no arguments the name stays 'world'. main() still prints greet(name) and returns 0. Change only src/samplecli/cli.py. greet() in src/samplecli/greet.py must stay byte-for-byte unchanged: it does not strip and does not default (greet('') == 'Hello, !'). Do not change main()'s signature, add CLI flags, add dependencies, or edit tests. Risk: no owner_approval category applies — no signature, parameter, flag or symbol changes (not public_api) and no new dependency; this only changes CLI output for blank/padded input.",
+  "acceptance": {
+    "criteria": [
+      {
+        "id": "AC1",
+        "text": "main(['   ']) returns 0 and prints exactly 'Hello, world!\\n'",
+        "verified_by": "tests/test_cli_blank_name.py::test_spaces_only_name_falls_back_to_world"
+      },
+      {
+        "id": "AC2",
+        "text": "main(['']) returns 0 and prints exactly 'Hello, world!\\n'",
+        "verified_by": "tests/test_cli_blank_name.py::test_empty_name_falls_back_to_world"
+      },
+      {
+        "id": "AC3",
+        "text": "main(['\\t\\n ']) returns 0 and prints exactly 'Hello, world!\\n'",
+        "verified_by": "tests/test_cli_blank_name.py::test_tab_newline_name_falls_back_to_world"
+      },
+      {
+        "id": "AC4",
+        "text": "main(['  Ada\\t']) returns 0 and prints exactly 'Hello, Ada!\\n'",
+        "verified_by": "tests/test_cli_blank_name.py::test_name_is_stripped_in_cli"
+      },
+      {
+        "id": "AC5",
+        "text": "greet() is unchanged: greet('  Ada  ') == 'Hello,   Ada  !' and greet('') == 'Hello, !'",
+        "verified_by": "tests/test_cli_blank_name.py::test_greet_does_not_strip_or_default"
+      }
+    ],
+    "tests": [
+      {
+        "path": "tests/test_cli_blank_name.py",
+        "sha256": "bc23d061edb9588b25165b2341bf1819257eef3ab5cba7ff89c30a9aada0af49"
+      }
+    ]
+  },
+  "success": {
+    "run": "pytest -q tests/test_cli_blank_name.py",
+    "timeout_s": 180
+  },
+  "scope": {
+    "writable": [
+      "src/samplecli/cli.py"
+    ],
+    "out_of_scope": [
+      "src/samplecli/greet.py and greet() behaviour",
+      "new CLI flags or argument parsing libraries",
+      "packaging and pyproject.toml"
+    ]
+  },
+  "diff_budget": {
+    "files": 1,
+    "lines": 20
+  },
+  "deps": {
+    "allowed_new": []
+  },
+  "depends_on": [],
+  "author": {
+    "architect": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5"
+    },
+    "implementer_vendor_excluded_from_judge": true
+  }
+}
